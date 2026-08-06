@@ -78,9 +78,17 @@ export interface Event {
   organizer_email: string | null;
   date_from: string | null;
   date_to: string | null;
+  location: string | null;
   notes: string | null;
   important_info: string | null;
   created_by: string | null;
+  created_at: string;
+}
+
+export interface EventEvaluation {
+  id: string;
+  event_id: string;
+  text: string;
   created_at: string;
 }
 

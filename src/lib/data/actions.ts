@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { expandEventStand } from "@/lib/packing/expand";
 import { getPackingGraph } from "@/lib/data/queries";
-import type { EventDocument } from "@/lib/types/database";
+import type { EventDocument, EventEvaluation } from "@/lib/types/database";
 
 function str(formData: FormData, key: string): string {
   return String(formData.get(key) ?? "").trim();
@@ -312,6 +312,7 @@ export async function createEvent(formData: FormData) {
       organizer_email: nullableStr(formData, "organizer_email"),
       date_from: nullableStr(formData, "date_from"),
       date_to: nullableStr(formData, "date_to"),
+      location: nullableStr(formData, "location"),
       notes: nullableStr(formData, "notes"),
       important_info: nullableStr(formData, "important_info"),
       created_by: user?.id ?? null,
@@ -335,6 +336,7 @@ export async function updateEvent(formData: FormData) {
       organizer_email: nullableStr(formData, "organizer_email"),
       date_from: nullableStr(formData, "date_from"),
       date_to: nullableStr(formData, "date_to"),
+      location: nullableStr(formData, "location"),
       notes: nullableStr(formData, "notes"),
       important_info: nullableStr(formData, "important_info"),
     })
@@ -730,6 +732,27 @@ export async function deleteEventDocument(docId: string, filePath: string, event
   const { error: storageError } = await supabase.storage.from("event-documents").remove([filePath]);
   if (storageError) throw new Error(storageError.message);
   const { error } = await supabase.from("event_documents").delete().eq("id", docId);
+  if (error) throw new Error(error.message);
+  revalidatePath(`/events/${eventId}`);
+}
+
+// ── Evaluering ────────────────────────────────────────────────────────────────
+
+export async function addEvaluationPoint(eventId: string, text: string): Promise<EventEvaluation> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("event_evaluations")
+    .insert({ event_id: eventId, text })
+    .select("*")
+    .single();
+  if (error) throw new Error(error.message);
+  revalidatePath(`/events/${eventId}`);
+  return data as EventEvaluation;
+}
+
+export async function deleteEvaluationPoint(id: string, eventId: string): Promise<void> {
+  const supabase = await createClient();
+  const { error } = await supabase.from("event_evaluations").delete().eq("id", id);
   if (error) throw new Error(error.message);
   revalidatePath(`/events/${eventId}`);
 }

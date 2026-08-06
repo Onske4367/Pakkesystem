@@ -3,6 +3,7 @@ import Link from "next/link";
 import {
   getEvent,
   getEventDocuments,
+  getEventEvaluations,
   getEventStands,
   getMainElements,
   getShiftsForEvent,
@@ -29,6 +30,8 @@ import {
 import { ExportVolunteersButton } from "@/components/export-volunteers-button";
 import { AddVolunteerMultiDayForm } from "@/components/add-volunteer-multiday-form";
 import { EventDocumentsSection } from "@/components/event-documents-section";
+import { EventEvaluationSection } from "@/components/event-evaluation-section";
+import { EventWeatherSection } from "@/components/event-weather-section";
 import type { Shift, Volunteer, VolunteerNeed } from "@/lib/types/database";
 
 function VolunteerNeedBlock({
@@ -124,13 +127,14 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
   const event = await getEvent(id);
   if (!event) notFound();
 
-  const [standTypes, mainElements, eventStands, shifts, eventNeeds, documents] = await Promise.all([
+  const [standTypes, mainElements, eventStands, shifts, eventNeeds, documents, evaluations] = await Promise.all([
     getStandTypes(),
     getMainElements(),
     getEventStands(id),
     getShiftsForEvent(id),
     getVolunteerNeedsForEvent(id),
     getEventDocuments(id),
+    getEventEvaluations(id),
   ]);
 
   const shiftNeeds = await Promise.all(shifts.map((s) => getVolunteerNeedsForShift(s.id)));
@@ -183,6 +187,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
               Dato til
               <input name="date_to" type="date" defaultValue={event.date_to ?? ""} className="border border-slate-300 rounded-md px-3 py-2 text-sm" />
             </label>
+            <input name="location" defaultValue={event.location ?? ""} placeholder="Sted (f.eks. Arendal) — brukes til værmelding" className="border border-slate-300 rounded-md px-3 py-2 text-sm sm:col-span-2" />
             <textarea name="notes" defaultValue={event.notes ?? ""} placeholder="Notater" className="border border-slate-300 rounded-md px-3 py-2 text-sm sm:col-span-2" />
             <textarea name="important_info" defaultValue={event.important_info ?? ""} placeholder="Viktig informasjon (vises tydelig for teamet)" rows={4} className="border border-amber-300 bg-amber-50 rounded-md px-3 py-2 text-sm sm:col-span-2" />
             <button className="sm:col-span-2 bg-slate-100 text-slate-800 rounded-md px-4 py-2 text-sm font-medium hover:bg-slate-200">
@@ -256,6 +261,33 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
         </summary>
         <div className="px-4 pb-4 pt-3 border-t border-slate-100">
           <EventDocumentsSection eventId={id} initialDocuments={documents} />
+        </div>
+      </details>
+
+      {/* ── Vær ──────────────────────────────────────────────────────── */}
+      <details className="group bg-white border border-slate-200 rounded-xl overflow-hidden">
+        <summary className="flex items-center justify-between px-4 py-3 cursor-pointer select-none hover:bg-slate-50 list-none [&::-webkit-details-marker]:hidden">
+          <span className="text-sm font-semibold text-slate-700">Vær</span>
+          {chevron}
+        </summary>
+        <div className="px-4 pb-4 pt-3 border-t border-slate-100">
+          <EventWeatherSection event={event} />
+        </div>
+      </details>
+
+      {/* ── Evaluering ───────────────────────────────────────────────── */}
+      <details className="group bg-white border border-slate-200 rounded-xl overflow-hidden">
+        <summary className="flex items-center justify-between px-4 py-3 cursor-pointer select-none hover:bg-slate-50 list-none [&::-webkit-details-marker]:hidden">
+          <span className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+            Evaluering
+            {evaluations.length > 0 && (
+              <span className="text-xs font-normal text-slate-400">{evaluations.length} punkt{evaluations.length !== 1 ? "er" : ""}</span>
+            )}
+          </span>
+          {chevron}
+        </summary>
+        <div className="px-4 pb-4 pt-3 border-t border-slate-100">
+          <EventEvaluationSection eventId={id} initialEvaluations={evaluations} />
         </div>
       </details>
 

@@ -3,6 +3,7 @@ import type {
   Category,
   Event,
   EventDocument,
+  EventEvaluation,
   EventStand,
   EventStandItem,
   EquipmentUnit,
@@ -157,4 +158,15 @@ export async function getEventDocuments(eventId: string): Promise<EventDocument[
     .order("created_at");
   if (error) throw new Error(error.message);
   return (data ?? []) as EventDocument[];
+}
+
+export async function getEventEvaluations(eventId: string): Promise<EventEvaluation[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("event_evaluations")
+    .select("*")
+    .eq("event_id", eventId)
+    .order("created_at");
+  if (error) throw new Error(error.message);
+  return (data ?? []) as EventEvaluation[];
 }
