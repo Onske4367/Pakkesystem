@@ -22,7 +22,7 @@ import {
 } from "@/lib/data/actions";
 import { GroupToggleCheckbox, InlineTextField, ToggleCheckbox } from "@/components/packing-fields";
 import { PrintButton } from "@/components/print-button";
-import { ExportCsvButton } from "@/components/export-csv-button";
+import { ExportCsvButton, type ExportGroup } from "@/components/export-csv-button";
 import type { EventStandItem, Item } from "@/lib/types/database";
 
 /**
@@ -165,10 +165,10 @@ export default async function PakkelistePage({
         </div>
         <div className="flex gap-2 shrink-0 no-print">
           <ExportCsvButton
-            filename={`pakkeliste-${event.name.replace(/\s+/g, "-").toLowerCase()}.csv`}
-            rows={groups.flatMap((g) =>
-              g.items.map((si) => ({
-                group: g.label ?? "",
+            filename={`pakkeliste-${event.name.replace(/\s+/g, "-").toLowerCase()}`}
+            groups={groups.map((g): ExportGroup => ({
+              label: g.label,
+              items: g.items.map((si) => ({
                 name: itemsById.get(si.item_id)?.name ?? "?",
                 qty: si.qty?.toString() ?? "",
                 supplier: si.supplier ?? "",
@@ -177,8 +177,8 @@ export default async function PakkelistePage({
                 pakket: si.pakket,
                 returnert: si.returnert,
                 rengjort: si.rengjort,
-              }))
-            )}
+              })),
+            }))}
           />
           <PrintButton />
         </div>
