@@ -69,6 +69,7 @@ export function ExportCsvButton({ groups, filename }: { groups: ExportGroup[]; f
 
     ws["!ref"] = XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: r - 1, c: COLS.length - 1 } });
     ws["!cols"] = [{ wch: 28 }, { wch: 10 }, { wch: 18 }, { wch: 14 }, { wch: 14 }, { wch: 10 }, { wch: 10 }, { wch: 10 }];
+    ws["!freeze"] = { xSplit: 0, ySplit: 1 };
 
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Pakkeliste");
