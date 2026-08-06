@@ -511,7 +511,7 @@ export async function addEquipmentUnitToStand(formData: FormData) {
   if (!unitItems?.length) return;
 
   const rows = unitItems.map((ui) => {
-    const item = ui.items as { kind: string; default_min_qty: number | null; default_supplier: string | null } | null;
+    const item = ui.items as unknown as { kind: string; default_min_qty: number | null; default_supplier: string | null } | null;
     const needsQtyConfirmation = item?.kind === "consumable";
     return {
       event_stand_id: eventStandId,
